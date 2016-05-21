@@ -1,0 +1,2 @@
+# logs
+Log for Go.
