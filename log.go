@@ -1,50 +1,60 @@
 package logs
 
 import (
-	"sync"
+	"log"
+	"io"
 	"github.com/niflheims-io/logs/writer"
+	"fmt"
 )
 
 type Logs struct  {
-	outputs []output
-	lk *sync.Mutex
+	*log.Logger
 }
 
-func New() *Logs {
-	bitLog := &Logs{outputs:make([]output,0,1), lk:new(sync.Mutex)}
-	return bitLog
+func New(out io.Writer, prefix string, flag int) *Logs {
+	logger := Logs{log.New(out, prefix, flag)}
+	return &logger
 }
 
-func (self *Logs) AddOutput(level int, f Formatter, w writer.Writer)  {
-	self.lk.Lock()
-	defer self.lk.Unlock()
-	p := output{level:level, formatter:f, writer:w, logger: self}
-	self.outputs = append(self.outputs, p)
+func (l *Logs) Error(v ...interface{}) {
+	l.Output(2, fmt.Sprint(writer.LEVEL_ERROR_NAME) + " " + fmt.Sprint(v...))
 }
 
-func (self *Logs) Print() *printer {
-	p := newPrinter(self)
-	return p
+func (l *Logs) ErrorF(format string, v ...interface{}) {
+	l.Output(2, fmt.Sprint(writer.LEVEL_ERROR_NAME) + " " + fmt.Sprintf(format, v...))
 }
 
-func (self *Logs) doLog(dp DataPkg) {
-	outputLen := len(self.outputs)
-	if outputLen == 0 {
-		w := writer.NewStdWriter(false)
-		f := NewTextLineFormatter();
-		self.AddOutput(LEVEL_DEBUG, f, w)
-	}
-	for i := 0 ; i < outputLen ; i ++ {
-		op := self.outputs[i]
-		op.on(dp)
-	}
+func (l *Logs) Warn(v ...interface{}) {
+	l.Output(2, fmt.Sprint(writer.LEVEL_WARN_NAME) + " " + fmt.Sprint(v...))
+}
+
+func (l *Logs) WarnF(format string, v ...interface{}) {
+	l.Output(2, fmt.Sprint(writer.LEVEL_WARN_NAME) + " " + fmt.Sprintf(format, v...))
 }
 
 
+func (l *Logs) Info(v ...interface{}) {
+	l.Output(2, fmt.Sprint(writer.LEVEL_INFO_NAME) + " " + fmt.Sprint(v...))
+}
 
+func (l *Logs) InfoF(format string, v ...interface{}) {
+	l.Output(2, fmt.Sprint(writer.LEVEL_INFO_NAME) + " " + fmt.Sprintf(format, v...))
+}
 
+func (l *Logs) Debug(v ...interface{}) {
+	l.Output(2, fmt.Sprint(writer.LEVEL_DEBUG_NAME) + " " + fmt.Sprint(v...))
+}
 
+func (l *Logs) DebugF(format string, v ...interface{}) {
+	l.Output(2, fmt.Sprint(writer.LEVEL_DEBUG_NAME) + " " + fmt.Sprintf(format, v...))
+}
 
+func (l *Logs) Trace(v ...interface{}) {
+	l.Output(2, fmt.Sprint(writer.LEVEL_TRACE_NAME) + " " + fmt.Sprint(v...))
+}
 
+func (l *Logs) TraceF(format string, v ...interface{}) {
+	l.Output(2, fmt.Sprint(writer.LEVEL_TRACE_NAME) + " " + fmt.Sprintf(format, v...))
+}
 
 
