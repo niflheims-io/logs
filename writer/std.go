@@ -1,24 +1,40 @@
 package writer
 
 import (
-	"fmt"
+	"os"
+	"syscall"
 )
 
-type stdWriter struct  {
-	async bool
+type StandardOutputWriter struct {
+	out *os.File
+	prefix string
+	flags int
+	transformFunc TransformFunc
 }
 
-func NewStdWriter(async bool) *stdWriter {
-	return &stdWriter{async:async}
+type TransformFunc func(LogMsg) ([]byte, error)
+
+func NewStandardOutputWriter(prefix string, flags int, transformFunc TransformFunc) *StandardOutputWriter {
+	w := new(StandardOutputWriter)
+	w.out = os.NewFile(uintptr(syscall.Stdout), "/dev/stdout")
+	w.prefix = prefix
+	w.flags = flags
+	w.transformFunc = transformFunc
+	return w
 }
 
-func (self stdWriter) Write(p []byte) (int, error) {
-	if self.async {
-		go func(p []byte) {
-			fmt.Println(string(p))
-		}(p)
-		return 0, nil
-	} else {
-		return fmt.Println(string(p))
+func (w *StandardOutputWriter) Write(p []byte) (int, error) {
+	msg, decodeErr := LogMsgDecode(p, w.prefix, w.flags)
+	if decodeErr != nil {
+		return 0, decodeErr
 	}
+	bytes, transformErr := w.transformFunc(msg)
+	if transformErr != nil {
+		return 0, transformErr
+	}
+	if msg.NewLineFlag {
+		bytes = append(bytes, '\n')
+	}
+	return w.out.Write(bytes)
 }
+
