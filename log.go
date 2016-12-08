@@ -56,5 +56,3 @@ func (l *Logs) Trace(v ...interface{}) {
 func (l *Logs) TraceF(format string, v ...interface{}) {
 	l.Output(2, fmt.Sprint(writer.LEVEL_TRACE_NAME) + " " + fmt.Sprintf(format, v...))
 }
-
-
