@@ -106,6 +106,7 @@ func (w *LogsSingleFileWriter) Close() error {
 	}
 	syncErr := w.file.Sync()
 	closeErr := w.file.Close()
+	w.fileOpenFlg = false
 	if syncErr != nil {
 		return syncErr
 	}
@@ -121,15 +122,16 @@ func (w *LogsSingleFileWriter) closeFileWhenIdle() {
 					return
 				}
 			case <- time.After(time.Second * 5) :
+				w.wg.Add(1)
+				defer w.wg.Done()
 				if w.fileOpenFlg {
-					w.wg.Add(1)
 					if w.fileWriterBuf.Buffered() > 0 {
 						w.fileWriterBuf.Flush()
 					}
 					syncErr := w.file.Sync()
 					closeErr := w.file.Close()
 					w.fileOpenFlg = false
-					w.wg.Done()
+
 					if syncErr != nil || closeErr != nil {
 						panic(fmt.Sprintf("Sync file error:%v, close file error:%v.", &syncErr, &closeErr))
 					}
