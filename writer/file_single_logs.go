@@ -83,7 +83,7 @@ func (w *LogsSingleFileWriter) Write(p []byte) (int, error) {
 	if !w.fileOpenFlg {
 		w.wg.Add(1)
 		var fileOpenErr error
-		w.file, fileOpenErr = os.OpenFile(w.fileName, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
+		w.file, fileOpenErr = os.OpenFile(w.fileName, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0666)
 		if fileOpenErr != nil {
 			return 0, fileOpenErr
 		}
