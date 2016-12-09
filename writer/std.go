@@ -12,9 +12,16 @@ type StandardOutputWriter struct {
 	transformFunc TransformFunc
 }
 
-type TransformFunc func(LogMsg) ([]byte, error)
+func NewStandardOutputWriter(prefix string, flags int) *StandardOutputWriter {
+	w := new(StandardOutputWriter)
+	w.out = os.NewFile(uintptr(syscall.Stdout), "/dev/stdout")
+	w.prefix = prefix
+	w.flags = flags
+	w.transformFunc = StandardTextLineTransform
+	return w
+}
 
-func NewStandardOutputWriter(prefix string, flags int, transformFunc TransformFunc) *StandardOutputWriter {
+func NewStandardOutputWriterWithTransform(prefix string, flags int, transformFunc TransformFunc) *StandardOutputWriter {
 	w := new(StandardOutputWriter)
 	w.out = os.NewFile(uintptr(syscall.Stdout), "/dev/stdout")
 	w.prefix = prefix
@@ -26,10 +33,12 @@ func NewStandardOutputWriter(prefix string, flags int, transformFunc TransformFu
 func (w *StandardOutputWriter) Write(p []byte) (int, error) {
 	msg, decodeErr := LogMsgDecode(p, w.prefix, w.flags)
 	if decodeErr != nil {
+		panic(decodeErr)
 		return 0, decodeErr
 	}
 	bytes, transformErr := w.transformFunc(msg)
 	if transformErr != nil {
+		panic(transformErr)
 		return 0, transformErr
 	}
 	if msg.NewLineFlag {
