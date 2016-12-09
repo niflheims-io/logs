@@ -26,6 +26,7 @@ func LogMsgDecode(p []byte, prefix string, logFlags int) (msg LogMsg, err error)
 		err = errors.New("Log message is empty.")
 		return
 	}
+	msg.DateTime = time.Now()
 	if p[len(p)-1] == '\n' {
 		p = p[0:len(p)-1]
 		msg.NewLineFlag = true
@@ -63,7 +64,6 @@ func LogMsgDecode(p []byte, prefix string, logFlags int) (msg LogMsg, err error)
 			}
 		}
 	}
-
 	if hasDateTime == false && hasFile == false {
 		msg.Msg = string(p)
 		return
