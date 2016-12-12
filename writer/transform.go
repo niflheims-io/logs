@@ -8,7 +8,7 @@ func StandardTextLineTransform(msg LogMsg) ([]byte, error) {
 		line = line + msg.Prefix + " "
 	}
 	if !msg.DateTime.IsZero() {
-		line = line + color_blue + msg.DateTime.String() + color_default + " "
+		line = line + msg.DateTime.String() + " "
 	}
 	if msg.File != "" {
 		line = line + msg.File + " "
@@ -32,7 +32,7 @@ func LogsStandardTextLineTransform(msg LogMsg) ([]byte, error) {
 	}
 	line = line + getLevelColor(msg.LevelNo) + "[" + msg.LevelName + "]" + color_default + " "
 	if !msg.DateTime.IsZero() {
-		line = line + color_blue + msg.DateTime.String() + color_default + " "
+		line = line + msg.DateTime.String() + " "
 	}
 	if msg.File != "" {
 		line = line + msg.File + " "
